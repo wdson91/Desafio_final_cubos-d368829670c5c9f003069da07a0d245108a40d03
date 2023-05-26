@@ -27,27 +27,23 @@ export class UploadService {
     }
     async uploadImage(file: Express.Multer.File): Promise<any> {
 
-
-
-
-        const data = file.buffer;
-
-
-
-        const time = new Date().getTime().toString();
-        const filename = `${randomUUID()}-${file.originalname}`;
-
-        const uploadParams = ({
-            Bucket: process.env.B2_BUCKET_NAME,
-            Key: `${filename}`,
-            Body: data,
-            ContentType: file.mimetype,
-
-        })
-
-
-        const uploadCommand = new PutObjectCommand(uploadParams);
         try {
+
+            const data = await fs.readFileSync(file.path);
+
+            const time = new Date().getTime().toString();
+            const filename = `${randomUUID()}-${file.originalname}`;
+
+            const uploadParams = ({
+                Bucket: process.env.B2_BUCKET_NAME,
+                Key: `${filename}`,
+                Body: data,
+                ContentType: file.mimetype,
+
+            })
+
+
+            const uploadCommand = new PutObjectCommand(uploadParams);
             const response = await this.s3Client.send(uploadCommand);
             console.log('Upload realizado com sucesso:', response);
 
