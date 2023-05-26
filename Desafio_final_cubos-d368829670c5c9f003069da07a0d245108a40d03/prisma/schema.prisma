@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Categories {
+  id          Int        @id @default(autoincrement())
+  description String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime?  @updatedAt
+  Produtos    Produtos[]
+}
+
+model Produtos {
+  id                 Int        @id @default(autoincrement())
+  descricao          String
+  quantidade_estoque Int
+  valor              Float
+  produto_imagem     String?
+  category           Categories @relation(fields: [categoria_id], references: [id])
+  categoria_id       Int
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime?  @updatedAt
+
+  PedidoProduto PedidoProduto[]
+  Pedidos       Pedidos[]
+}
+
+model Clientes {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  email     String    @unique
+  cpf       String    @unique
+  cep       String?
+  rua       String?
+  numero    Int?
+  bairro    String?
+  cidade    String?
+  estado    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  pedidos   Pedidos[]
+}
+
+model Pedidos {
+  id              Int             @id @default(autoincrement())
+  cliente_id      Int
+  oberservacao    String?
+  valor_total     Float
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime?       @updatedAt
+  pedido_produtos PedidoProduto[]
+  cliente         Clientes        @relation(fields: [cliente_id], references: [id])
+  Produtos        Produtos?       @relation(fields: [produtosId], references: [id])
+  produtosId      Int?
+}
+
+model PedidoProduto {
+  id                 Int   @id @default(autoincrement())
+  pedido_id          Int
+  produto_id         Int
+  quantidade_produto Int
+  valor_produto      Float
+
+  pedido  Pedidos  @relation(fields: [pedido_id], references: [id])
+  produto Produtos @relation(fields: [produto_id], references: [id])
+}
