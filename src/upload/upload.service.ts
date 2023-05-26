@@ -18,7 +18,7 @@ export class UploadService {
     constructor() {
         this.s3Client = new S3Client({
             region: "us-west-1",
-            endpoint: process.env.S3_ENDPOINT,
+            endpoint: "https://s3.us-east-005.backblazeb2.com",
             credentials: {
                 accessKeyId: process.env.B2_APPLICATION_KEY_ID,
                 secretAccessKey: process.env.B2_APPLICATION_KEY,
@@ -28,13 +28,9 @@ export class UploadService {
     async uploadImage(file: Express.Multer.File): Promise<any> {
 
 
+        const { path } = file;
 
-        const bucketName = process.env.B2_BUCKET_NAME;
-
-
-        const { originalname, path } = file;
-
-        const data = await fs.readFileSync(file.path);
+        const data = file.buffer;
 
 
 
