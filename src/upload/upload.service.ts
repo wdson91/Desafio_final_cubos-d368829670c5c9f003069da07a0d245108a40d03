@@ -28,7 +28,7 @@ export class UploadService {
     async uploadImage(file: Express.Multer.File): Promise<any> {
 
 
-        const { path } = file;
+
 
         const data = file.buffer;
 
@@ -56,7 +56,7 @@ export class UploadService {
             throw new Error('Erro ao fazer o upload da imagem');
         } finally {
             // Remove o arquivo local após o upload
-            await fs.rmSync(path);
+            await fs.rmSync(file.path);
         }
     }
 
