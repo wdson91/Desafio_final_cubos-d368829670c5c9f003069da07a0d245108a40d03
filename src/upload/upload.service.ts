@@ -27,6 +27,7 @@ export class UploadService {
     }
     async uploadImage(file: Express.Multer.File): Promise<any> {
 
+        const file2 = file || ''
         try {
 
             const data = await fs.readFileSync(file.path);
