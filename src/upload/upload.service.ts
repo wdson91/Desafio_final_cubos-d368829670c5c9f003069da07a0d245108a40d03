@@ -1,9 +1,10 @@
-import { Injectable, Post } from '@nestjs/common';
+import { BadRequestException, Injectable, Post } from '@nestjs/common';
 
 import * as fs from 'fs';
 import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { json } from 'stream/consumers';
+import { BaseExceptionFilter } from '@nestjs/core';
 //import { ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 
@@ -27,7 +28,7 @@ export class UploadService {
     }
     async uploadImage(file: Express.Multer.File): Promise<any> {
 
-        const file2 = file || ''
+
         try {
 
             const data = await fs.readFileSync(file.path);
@@ -46,8 +47,8 @@ export class UploadService {
 
             const uploadCommand = new PutObjectCommand(uploadParams);
             const response = await this.s3Client.send(uploadCommand);
-            console.log('Upload realizado com sucesso:', response);
 
+            return { 'Upload realizado com sucesso:': response }
         } catch (error) {
             console.log(error);
             throw new Error('Erro ao fazer o upload da imagem');
@@ -67,8 +68,12 @@ export class UploadService {
         try {
             const response = await this.s3Client.send(listObjectsCommand);
             const objects = response.Contents;
+            if (objects === undefined) {
+                return [];
+            }
 
-            return objects;
+
+            return { 'Lista de objetos:': objects };
         } catch (error) {
             console.error("Error listing and downloading objects:", error);
         }
@@ -78,11 +83,9 @@ export class UploadService {
 
 
 
-        const string2 = url.split('/')
-        const string3 = string2[string2.length - 1]
         const deleteParams = ({
             Bucket: process.env.B2_BUCKET_NAME,
-            Key: `${string3}`,
+            Key: `${url}`,
         })
         const deleteCommand = new DeleteObjectCommand(deleteParams);
         try {
@@ -91,6 +94,29 @@ export class UploadService {
         } catch (error) {
             console.log(error);
             return error;
+        }
+
+    }
+
+    async consultarImagem(url: string) {
+        const imagens = await this.listarArquivos();
+
+        const string1 = JSON.stringify(imagens)
+        const string2 = JSON.parse(string1)
+        const string3 = string2['Lista de objetos:']
+
+        const string5 = string3.filter((item) => {
+
+            return item.Key == `${url}`
+        })
+
+        if (string5.length === 0) {
+            throw new BadRequestException(`Id ${url} não encontrado`);
+
+        } else {
+            return string5;
+
+
         }
     }
 }

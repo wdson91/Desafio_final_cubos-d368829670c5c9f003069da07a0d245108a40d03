@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Query } from '@nestjs/common';
+import { BadRequestException, Injectable, Query, UseGuards } from '@nestjs/common';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
 import { Cliente } from '../clientes/entities/cliente.entity';
@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { EmailService } from './email.service';
 
 @Injectable()
+
 export class PedidosService {
   constructor(private prisma: PrismaService, private email: EmailService) { }
   async create(createPedidoDto: CreatePedidoDto) {
@@ -33,9 +34,10 @@ export class PedidosService {
       throw new BadRequestException('Produto não encontrado');
     }
     for (let i = 0; i < createPedidoDto.pedido_produtos.length; i++) {
+
       if (produtos[i].quantidade_estoque < createPedidoDto.pedido_produtos[i]['quantidade_produto']) {
 
-        throw new BadRequestException(`Estoque  do produtos ${produtos[i].id} insuficiente`);
+        throw new BadRequestException(`Estoque  do produto insuficiente`);
       }
     }
 
@@ -69,7 +71,7 @@ export class PedidosService {
       });
 
       await this.email.sendEmail(cliente.email, 'Pedido criado com sucesso', `Olá ${cliente.nome},seu pedido foi criado com sucesso`);
-
+      console.log(cliente.email)
     } catch (error) {
       console.log(error.message);
       throw new BadRequestException('Erro ao criar pedido');
@@ -79,8 +81,27 @@ export class PedidosService {
 
   }
 
-  findAll() {
-    return `This action returns all pedidos`;
+  async findAll(id?: number) {
+
+    if (id) {
+      const pedidos = await this.prisma.pedidos.findMany({
+        where: {
+          cliente_id: id
+        },
+        include: {
+          pedido_produtos: true
+        }
+      });
+      return { pedido: pedidos };
+    } else {
+      const pedidos = await this.prisma.pedidos.findMany({
+        include: {
+          pedido_produtos: true
+        }
+      });
+
+      return { pedido: pedidos };
+    }
   }
 
   findOne(id: number) {

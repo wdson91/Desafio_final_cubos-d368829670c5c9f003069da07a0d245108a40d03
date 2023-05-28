@@ -1,9 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException, UseGuards, Query } from '@nestjs/common';
 import { PedidosService } from './pedidos.service';
 import { CreatePedidoDto } from './dto/create-pedido.dto';
 import { UpdatePedidoDto } from './dto/update-pedido.dto';
+import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('pedido')
+
 export class PedidosController {
   constructor(private readonly pedidosService: PedidosService) { }
 
@@ -16,8 +19,8 @@ export class PedidosController {
   }
 
   @Get()
-  findAll() {
-    return this.pedidosService.findAll();
+  findAll(@Query('cliente_id') id: number) {
+    return this.pedidosService.findAll(+id);
   }
 
   @Get(':id')

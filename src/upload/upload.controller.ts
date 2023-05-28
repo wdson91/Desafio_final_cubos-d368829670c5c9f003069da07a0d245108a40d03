@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, UseGuards } from '@nestjs/common';
 import { UploadService } from './upload.service';
 
 import { FileInterceptor } from '@nestjs/platform-express';
-
+import { JwtAuthGuard } from 'src/auth/jwt.auth.guard';
+@UseGuards(JwtAuthGuard)
 @Controller('arquivo')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) { }
@@ -19,9 +20,9 @@ export class UploadController {
     return this.uploadService.listarArquivos();
   }
 
-  @Delete()
-  async deleteArquivo(url) {
-    return this.uploadService.deleteArquivo(url);
+  @Delete(':url')
+  async deleteArquivo(@Param('url') url: string) {
+    return await this.uploadService.deleteArquivo(url);
   }
 
 

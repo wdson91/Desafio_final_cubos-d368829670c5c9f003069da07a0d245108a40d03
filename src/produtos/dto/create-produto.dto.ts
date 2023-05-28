@@ -16,6 +16,6 @@ export class CreateProdutoDto {
     @IsNotEmpty()
     @IsPositive()
     categoria_id: number;
-    imagem?: string;
+    produto_imagem?: string;
 
 }
